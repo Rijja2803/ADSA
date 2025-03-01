@@ -1,15 +1,70 @@
-def binomial_coefficient(n, k):
-    dp = [[0] * (k + 1) for _ in range(n + 1)]
+class BinomialCoefficient:
+    def binomial_coefficient(self, n, k):
+        dp = [[0 for _ in range(k+1)] for _ in range(n+1)]
+        for i in range(n+1):
+            for j in range(min(i, k)+1):
+                if j == 0 or j == i:
+                    dp[i][j] = 1
+                else:
+                    dp[i][j] = dp[i-1][j-1] + dp[i-1][j]
+        return dp[n][k]
 
-    for i in range(n + 1):
-        for j in range(min(i, k) + 1):
-            if j == 0 or j == i:
-                dp[i][j] = 1  # Base cases
-            else:
-                dp[i][j] = dp[i - 1][j - 1] + dp[i - 1][j]
+class BellmanFord:
+    def __init__(self, vertices):
+        self.vertices = vertices
+        self.edges = []
+    
+    def add_edge(self, u, v, weight):
+        self.edges.append((u, v, weight))
+    
+    def shortest_path(self, source):
+        dist = {i: float('inf') for i in range(self.vertices)}
+        dist[source] = 0
+        
+        for _ in range(self.vertices - 1):
+            for u, v, weight in self.edges:
+                if dist[u] != float('inf') and dist[u] + weight < dist[v]:
+                    dist[v] = dist[u] + weight
+        
+        for u, v, weight in self.edges:
+            if dist[u] != float('inf') and dist[u] + weight < dist[v]:
+                raise ValueError("Graph contains a negative-weight cycle")
+        
+        return dist
 
-    return dp[n][k]
+class GraphAlgorithms:
+    def __init__(self):
+        self.binomial = BinomialCoefficient()
+        self.bellman_ford = None
+    
+    def compute_binomial_coefficient(self, n, k):
+        return self.binomial.binomial_coefficient(n, k)
+    
+    def initialize_bellman_ford(self, vertices):
+        self.bellman_ford = BellmanFord(vertices)
+    
+    def add_graph_edge(self, u, v, weight):
+        if self.bellman_ford:
+            self.bellman_ford.add_edge(u, v, weight)
+    
+    def compute_shortest_paths(self, source):
+        if self.bellman_ford:
+            return self.bellman_ford.shortest_path(source)
+        return None
 
-# Example usage
-n, k = 5, 2
-print(f"Binomial Coefficient C({n}, {k}) =", binomial_coefficient(n, k))
+# Example Usage
+ga = GraphAlgorithms()
+print("Binomial Coefficient (5,2):", ga.compute_binomial_coefficient(5, 2))
+
+ga.initialize_bellman_ford(5)
+ga.add_graph_edge(0, 1, -1)
+ga.add_graph_edge(0, 2, 4)
+ga.add_graph_edge(1, 2, 3)
+ga.add_graph_edge(1, 3, 2)
+ga.add_graph_edge(1, 4, 2)
+ga.add_graph_edge(3, 2, 5)
+ga.add_graph_edge(3, 1, 1)
+ga.add_graph_edge(4, 3, -3)
+
+print("Shortest paths from vertex 0:", ga.compute_shortest_paths(0))
+
